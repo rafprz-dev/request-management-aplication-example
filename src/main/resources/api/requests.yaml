@@ -1,0 +1,431 @@
+openapi: 3.0.3
+info:
+  title: Request Management API
+  description: |
+    Backend service managing the lifecycle of requests.
+
+    State machine:
+    - (create) -> CREATED
+    - CREATED  --verify-->  VERIFIED
+    - CREATED  --delete-->  DELETED   (terminal, reason required)
+    - VERIFIED --accept-->  ACCEPTED
+    - VERIFIED --reject-->  REJECTED  (terminal, reason required)
+    - ACCEPTED --reject-->  REJECTED  (terminal, reason required)
+    - ACCEPTED --publish--> PUBLISHED (terminal, unique numeric number assigned)
+
+    Content may only be edited in CREATED or VERIFIED state.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+tags:
+  - name: Requests
+    description: CRUD-like operations and browsing
+  - name: Transitions
+    description: State transitions governed by the state diagram
+  - name: Audit
+    description: History of state changes
+
+paths:
+  /requests:
+    post:
+      tags: [Requests]
+      operationId: createRequest
+      summary: Create a request
+      description: Creates a new request in CREATED state. Name and content are mandatory.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequestDto'
+      responses:
+        '201':
+          description: Request created
+          headers:
+            Location:
+              description: URL of the created request
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    get:
+      tags: [Requests]
+      operationId: listRequests
+      summary: List requests
+      description: Paginated list, filterable by name and state.
+      parameters:
+        - name: name
+          in: query
+          description: Case-insensitive partial match on request name
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: Exact match on request state
+          required: false
+          schema:
+            $ref: '#/components/schemas/RequestState'
+        - name: page
+          in: query
+          description: Zero-based page index
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Page size
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Page of requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestPageDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /requests/{id}:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
+    get:
+      tags: [Requests]
+      operationId: getRequest
+      summary: Get a request by id
+      responses:
+        '200':
+          description: The request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestDto'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Requests]
+      operationId: updateRequestContent
+      summary: Edit request content
+      description: Content may only be modified while the request is in CREATED or VERIFIED state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContentDto'
+      responses:
+        '200':
+          description: Updated request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /requests/{id}/verify:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
+    post:
+      tags: [Transitions]
+      operationId: verifyRequest
+      summary: Verify (CREATED -> VERIFIED)
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /requests/{id}/accept:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
+    post:
+      tags: [Transitions]
+      operationId: acceptRequest
+      summary: Accept (VERIFIED -> ACCEPTED)
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /requests/{id}/publish:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
+    post:
+      tags: [Transitions]
+      operationId: publishRequest
+      summary: Publish (ACCEPTED -> PUBLISHED)
+      description: Assigns a unique numeric identifier (publishedNumber) to the request.
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestOk'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /requests/{id}/reject:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
+    post:
+      tags: [Transitions]
+      operationId: rejectRequest
+      summary: Reject (VERIFIED or ACCEPTED -> REJECTED)
+      description: A reason is mandatory.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonDto'
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestOk'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /requests/{id}/delete:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
+    post:
+      tags: [Transitions]
+      operationId: deleteRequest
+      summary: Delete (CREATED -> DELETED)
+      description: |
+        Logical deletion; the request is kept and moves to the terminal DELETED state.
+        A reason is mandatory. Modelled as POST because DELETE with a body is poorly
+        supported by clients and code generators.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonDto'
+      responses:
+        '200':
+          $ref: '#/components/responses/RequestOk'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /requests/{id}/history:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
+    get:
+      tags: [Audit]
+      operationId: getRequestHistory
+      summary: Get audit log of state changes
+      description: Complete history of state changes, oldest first.
+      responses:
+        '200':
+          description: State change history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StateChangeDto'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    RequestId:
+      name: id
+      in: path
+      required: true
+      description: Request identifier
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    RequestOk:
+      description: Request after the transition
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RequestDto'
+    BadRequest:
+      description: Validation error (e.g. missing name, content or reason)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDto'
+    NotFound:
+      description: Request not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDto'
+    Conflict:
+      description: Operation not allowed in the current state
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDto'
+
+  schemas:
+    RequestState:
+      type: string
+      enum: [CREATED, VERIFIED, ACCEPTED, PUBLISHED, REJECTED, DELETED]
+
+    TransitionAction:
+      type: string
+      description: Action that caused a state change
+      enum: [CREATE, VERIFY, ACCEPT, REJECT, PUBLISH, DELETE]
+
+    CreateRequestDto:
+      type: object
+      required: [name, content]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        content:
+          type: string
+          minLength: 1
+
+    UpdateContentDto:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          minLength: 1
+
+    ReasonDto:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+
+    RequestDto:
+      type: object
+      required: [id, name, content, state, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+        content:
+          type: string
+        state:
+          $ref: '#/components/schemas/RequestState'
+        publishedNumber:
+          type: integer
+          format: int64
+          nullable: true
+          readOnly: true
+          description: Unique numeric identifier, set only when state is PUBLISHED
+        reason:
+          type: string
+          nullable: true
+          readOnly: true
+          description: Reason given on rejection or deletion
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    RequestPageDto:
+      type: object
+      required: [content, page, size, totalElements, totalPages]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+
+    StateChangeDto:
+      type: object
+      required: [id, requestId, action, toState, changedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        requestId:
+          type: string
+          format: uuid
+        action:
+          $ref: '#/components/schemas/TransitionAction'
+        fromState:
+          $ref: '#/components/schemas/RequestState'
+        toState:
+          $ref: '#/components/schemas/RequestState'
+        reason:
+          type: string
+          nullable: true
+        changedAt:
+          type: string
+          format: date-time
+
+    ErrorDto:
+      type: object
+      required: [status, error, message, timestamp]
+      properties:
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        details:
+          type: array
+          items:
+            type: string
