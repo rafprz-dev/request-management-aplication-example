@@ -1,0 +1,63 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-request-management-table
+      author: rafprz
+      comment: "Create the requests table"
+      changes:
+        - createTable:
+            tableName: requests
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: state
+                  type: VARCHAR(20)
+                  defaultValue: CREATED
+                  constraints:
+                    nullable: false
+              - column:
+                  name: published_number
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+                    unique: true
+                    uniqueConstraintName: uk_requests_published_number
+              - column:
+                  name: reason
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 001-requests-id-default-postgresql
+      author: rafprz
+      comment: "Default id generation for direct SQL inserts; the app itself always assigns ids via Hibernate."
+      dbms: postgresql
+      changes:
+        - addDefaultValue:
+            tableName: requests
+            columnName: id
+            defaultValueComputed: gen_random_uuid()

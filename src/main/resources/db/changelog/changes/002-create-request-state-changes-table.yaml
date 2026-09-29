@@ -1,64 +1,15 @@
 databaseChangeLog:
   - changeSet:
-      id: 001-create-request-management-table
+      id: 002-create-request-state-changes-table
       author: rafprz
-      comment: "Create the requests and request_state_changes tables"
+      comment: "Create the request_state_changes table (audit log backing RequestStateChangeEntity)"
       changes:
-        - createTable:
-            tableName: requests
-            columns:
-              - column:
-                  name: id
-                  type: UUID
-                  defaultValueComputed: gen_random_uuid()
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: name
-                  type: VARCHAR(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: content
-                  type: TEXT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: state
-                  type: VARCHAR(20)
-                  defaultValue: CREATED
-                  constraints:
-                    nullable: false
-              - column:
-                  name: published_number
-                  type: BIGINT
-                  constraints:
-                    nullable: true
-                    unique: true
-                    uniqueConstraintName: uk_requests_published_number
-              - column:
-                  name: reason
-                  type: VARCHAR(1000)
-                  constraints:
-                    nullable: true
-              - column:
-                  name: created_at
-                  type: TIMESTAMP
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMP
-                  constraints:
-                    nullable: false
         - createTable:
             tableName: request_state_changes
             columns:
               - column:
                   name: id
                   type: UUID
-                  defaultValueComputed: gen_random_uuid()
                   constraints:
                     primaryKey: true
                     nullable: false
@@ -105,3 +56,13 @@ databaseChangeLog:
             columns:
               - column:
                   name: request_id
+  - changeSet:
+      id: 002-request-state-changes-id-default-postgresql
+      author: rafprz
+      comment: "Default id generation for direct SQL inserts; the app itself always assigns ids via Hibernate."
+      dbms: postgresql
+      changes:
+        - addDefaultValue:
+            tableName: request_state_changes
+            columnName: id
+            defaultValueComputed: gen_random_uuid()
