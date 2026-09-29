@@ -41,51 +41,54 @@ public class RequestController implements RequestsApi {
     }
 
     @Override
-    public ResponseEntity<RequestPageDto> listRequests(@Valid String name,
-                                                       @Valid RequestState state,
-                                                       @Min(0) @Valid Integer page,
-                                                       @Min(1) @Max(100) @Valid Integer size) {
+    public ResponseEntity<RequestPageDto> listRequests(final @Valid String name,
+                                                       final @Valid RequestState state,
+                                                       final @Min(0) @Valid Integer page,
+                                                       final @Min(1) @Max(100) @Valid Integer size) {
         final var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         return ResponseEntity.ok(requestService.list(name, state, pageable));
     }
 
     @Override
-    public ResponseEntity<RequestDto> getRequest(UUID id) {
+    public ResponseEntity<RequestDto> getRequest(final UUID id) {
         return ResponseEntity.ok(requestService.getOrThrow(id));
     }
 
     @Override
-    public ResponseEntity<RequestDto> updateRequestContent(UUID id, @Valid UpdateContentDto updateContentDto) {
+    public ResponseEntity<RequestDto> updateRequestContent(final UUID id,
+                                                           final @Valid UpdateContentDto updateContentDto) {
         return ResponseEntity.ok(requestService.updateContent(id, updateContentDto.getContent()));
     }
 
     @Override
-    public ResponseEntity<RequestDto> verifyRequest(UUID id) {
+    public ResponseEntity<RequestDto> verifyRequest(final UUID id) {
         return ResponseEntity.ok(requestService.verify(id));
     }
 
     @Override
-    public ResponseEntity<RequestDto> acceptRequest(UUID id) {
+    public ResponseEntity<RequestDto> acceptRequest(final UUID id) {
         return ResponseEntity.ok(requestService.accept(id));
     }
 
     @Override
-    public ResponseEntity<RequestDto> publishRequest(UUID id) {
+    public ResponseEntity<RequestDto> publishRequest(final UUID id) {
         return ResponseEntity.ok(requestService.publish(id));
     }
 
     @Override
-    public ResponseEntity<RequestDto> rejectRequest(UUID id, @Valid ReasonDto reasonDto) {
+    public ResponseEntity<RequestDto> rejectRequest(final UUID id,
+                                                    final @Valid ReasonDto reasonDto) {
         return ResponseEntity.ok(requestService.reject(id, reasonDto.getReason()));
     }
 
     @Override
-    public ResponseEntity<RequestDto> deleteRequest(UUID id, @Valid ReasonDto reasonDto) {
+    public ResponseEntity<RequestDto> deleteRequest(final UUID id,
+                                                    final @Valid ReasonDto reasonDto) {
         return ResponseEntity.ok(requestService.delete(id, reasonDto.getReason()));
     }
 
     @Override
-    public ResponseEntity<List<StateChangeDto>> getRequestHistory(UUID id) {
+    public ResponseEntity<List<StateChangeDto>> getRequestHistory(final UUID id) {
         return ResponseEntity.ok(requestService.history(id));
     }
 }
