@@ -32,7 +32,7 @@ public class RequestController implements RequestsApi {
 
     @Override
     public ResponseEntity<RequestDto> createRequest(@Valid CreateRequestDto createRequestDto) {
-        RequestDto created = requestService.create(createRequestDto.getName(), createRequestDto.getContent());
+        final var created = requestService.create(createRequestDto.getName(), createRequestDto.getContent());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(created.getId())
@@ -45,7 +45,7 @@ public class RequestController implements RequestsApi {
                                                        @Valid RequestState state,
                                                        @Min(0) @Valid Integer page,
                                                        @Min(1) @Max(100) @Valid Integer size) {
-        var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        final var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         return ResponseEntity.ok(requestService.list(name, state, pageable));
     }
 

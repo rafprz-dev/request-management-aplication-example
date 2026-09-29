@@ -5,6 +5,10 @@ import dev.rafprz.requestmanagement.generated.model.RequestState;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 
+/**
+ * Alternative for JPA query methods, allows to build dynamic queries based on provided parameters.
+ */
+
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class RequestSpecifications {
 

@@ -7,6 +7,5 @@ import org.springframework.boot.test.context.SpringBootTest;
 class RequestManagementApplicationTests {
 
     @Test
-    void contextLoads() {
-    }
+    void should_load_application_context() {}
 }

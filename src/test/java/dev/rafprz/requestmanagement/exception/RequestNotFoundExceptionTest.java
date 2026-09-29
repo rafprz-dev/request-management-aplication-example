@@ -9,18 +9,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RequestNotFoundExceptionTest {
 
     @Test
-    void constructor_setsMessageContainingId() {
-        UUID id = UUID.randomUUID();
+    void should_set_message_containing_id() {
+        //given
+        final var id = UUID.randomUUID();
 
-        RequestNotFoundException ex = new RequestNotFoundException(id);
+        //when
+        final var ex = new RequestNotFoundException(id);
 
+        //then
         assertThat(ex.getMessage()).isEqualTo("Request not found: " + id);
     }
 
     @Test
     void isRuntimeException() {
-        RequestNotFoundException ex = new RequestNotFoundException(UUID.randomUUID());
+        //given
+        final var id = UUID.randomUUID();
 
+        //when
+        final var ex = new RequestNotFoundException(id);
+
+        //then
         assertThat(ex).isInstanceOf(RuntimeException.class);
     }
 }

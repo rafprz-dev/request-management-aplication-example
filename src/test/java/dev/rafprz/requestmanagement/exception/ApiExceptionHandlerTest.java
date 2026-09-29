@@ -1,20 +1,17 @@
 package dev.rafprz.requestmanagement.exception;
 
-import dev.rafprz.requestmanagement.generated.model.ErrorDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,13 +25,17 @@ class ApiExceptionHandlerTest {
 
     @Test
     void handleNotFound_returns404WithMessageAndNoDetails() {
-        UUID id = UUID.randomUUID();
-        RequestNotFoundException ex = new RequestNotFoundException(id);
+        //given
+        final var id = UUID.randomUUID();
+        final var ex = new RequestNotFoundException(id);
 
-        ResponseEntity<ErrorDto> response = handler.handleNotFound(ex);
+        //when
+        final var response = handler.handleNotFound(ex);
 
+        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        ErrorDto body = response.getBody();
+
+        final var body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body.getStatus()).isEqualTo(404);
         assertThat(body.getError()).isEqualTo("Not Found");
@@ -44,13 +45,16 @@ class ApiExceptionHandlerTest {
     }
 
     @Test
-    void handleConflict_returns409WithMessageAndNoDetails() {
-        InvalidStateTransitionException ex = new InvalidStateTransitionException("cannot publish from CREATED");
+    void should_return_409_with_message_and_no_details() {
+        //given
+        final var ex = new InvalidStateTransitionException("cannot publish from CREATED");
 
-        ResponseEntity<ErrorDto> response = handler.handleConflict(ex);
+        //when
+        final var response = handler.handleConflict(ex);
 
+        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
-        ErrorDto body = response.getBody();
+        final var body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body.getStatus()).isEqualTo(409);
         assertThat(body.getError()).isEqualTo("Conflict");
@@ -59,7 +63,8 @@ class ApiExceptionHandlerTest {
     }
 
     @Test
-    void handleValidation_returns400WithFieldErrorDetails() throws NoSuchMethodException {
+    void should_return_400_with_field_error_details() throws NoSuchMethodException {
+        //given
         Method method = SampleTarget.class.getDeclaredMethod("sample", String.class);
         MethodParameter methodParameter = new MethodParameter(method, 0);
         BindingResult bindingResult = new BeanPropertyBindingResult(new SampleTarget(), "createRequestDto");
@@ -67,10 +72,12 @@ class ApiExceptionHandlerTest {
         bindingResult.addError(new FieldError("createRequestDto", "content", "must not be blank"));
         MethodArgumentNotValidException ex = new MethodArgumentNotValidException(methodParameter, bindingResult);
 
-        ResponseEntity<ErrorDto> response = handler.handleValidation(ex);
+        //when
+        final var response = handler.handleValidation(ex);
 
+        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        ErrorDto body = response.getBody();
+        final var body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body.getStatus()).isEqualTo(400);
         assertThat(body.getError()).isEqualTo("Bad Request");
@@ -80,7 +87,8 @@ class ApiExceptionHandlerTest {
     }
 
     @Test
-    void handleConstraintViolation_returns400WithPropertyPathDetails() {
+    void should_return_400_with_property_path_details() {
+        //given
         ConstraintViolation<?> violation = mock(ConstraintViolation.class);
         Path path = mock(Path.class);
         when(path.toString()).thenReturn("list.page");
@@ -88,10 +96,12 @@ class ApiExceptionHandlerTest {
         when(violation.getMessage()).thenReturn("must be greater than or equal to 0");
         ConstraintViolationException ex = new ConstraintViolationException(Set.of(violation));
 
-        ResponseEntity<ErrorDto> response = handler.handleConstraintViolation(ex);
+        //when
+        final var response = handler.handleConstraintViolation(ex);
 
+        //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        ErrorDto body = response.getBody();
+        final var body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body.getStatus()).isEqualTo(400);
         assertThat(body.getError()).isEqualTo("Bad Request");

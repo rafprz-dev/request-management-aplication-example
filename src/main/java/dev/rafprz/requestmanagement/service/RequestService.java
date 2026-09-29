@@ -42,7 +42,7 @@ public class RequestService {
 
     public RequestDto create(@NonNull final String name,
                              @NonNull final String content) {
-        RequestEntity request = requestRepository.save(requestEntityFactory.create(name, content));
+        final var request = requestRepository.save(requestEntityFactory.create(name, content));
         recordHistory(request, TransitionAction.CREATE, null);
         return requestMapper.toDto(request);
     }
@@ -56,32 +56,33 @@ public class RequestService {
     public RequestPageDto list(final String name,
                                final RequestState state,
                                final Pageable pageable) {
-        List<Specification<RequestEntity>> specs = Stream.of(
+        final var specs = Stream.of(
                         RequestSpecifications.nameContains(name),
                         RequestSpecifications.hasState(state))
                 .filter(Objects::nonNull)
                 .toList();
-        Page<RequestEntity> page = requestRepository.findAll(Specification.allOf(specs), pageable);
+        final Page<RequestEntity> page = requestRepository.findAll(Specification.allOf(specs), pageable);
         return requestMapper.toPageDto(page);
     }
 
     public RequestDto updateContent(UUID id, String content) {
-        RequestEntity request = getEntityOrThrow(id);
+        final var request = getEntityOrThrow(id);
         request.updateContent(content);
         return requestMapper.toDto(request);
     }
 
     public RequestDto verify(final UUID id) {
-        RequestEntity request = getEntityOrThrow(id);
-        RequestState from = request.getState();
+        final var request = getEntityOrThrow(id);
+        final var from = request.getState();
         request.verify();
         recordHistory(request, TransitionAction.VERIFY, from);
         return requestMapper.toDto(request);
     }
 
     public RequestDto accept(final UUID id) {
-        RequestEntity request = getEntityOrThrow(id);
-        RequestState from = request.getState();
+        final var request = getEntityOrThrow(id);
+        final var from = request.getState();
+
         request.accept();
         recordHistory(request, TransitionAction.ACCEPT, from);
         return requestMapper.toDto(request);
@@ -89,16 +90,18 @@ public class RequestService {
 
     public RequestDto reject(final UUID id,
                              final String reason) {
-        RequestEntity request = getEntityOrThrow(id);
-        RequestState from = request.getState();
+        final var request = getEntityOrThrow(id);
+        final var from = request.getState();
+
         request.reject(reason);
         recordHistory(request, TransitionAction.REJECT, from);
         return requestMapper.toDto(request);
     }
 
     public RequestDto publish(final UUID id) {
-        RequestEntity request = getEntityOrThrow(id);
-        RequestState from = request.getState();
+        final var request = getEntityOrThrow(id);
+        final var from = request.getState();
+
         long nextPublishedNumber = requestRepository.findMaxPublishedNumber() + 1;
         request.publish(nextPublishedNumber);
         recordHistory(request, TransitionAction.PUBLISH, from);
@@ -107,8 +110,9 @@ public class RequestService {
 
     public RequestDto delete(final UUID id,
                              final String reason) {
-        RequestEntity request = getEntityOrThrow(id);
-        RequestState from = request.getState();
+        final var request = getEntityOrThrow(id);
+        final var from = request.getState();
+
         request.delete(reason);
         recordHistory(request, TransitionAction.DELETE, from);
         return requestMapper.toDto(request);

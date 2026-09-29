@@ -8,15 +8,19 @@ class InvalidStateTransitionExceptionTest {
 
     @Test
     void constructor_setsMessage() {
-        InvalidStateTransitionException ex = new InvalidStateTransitionException("cannot publish from CREATED");
+        //when
+        final var ex = new InvalidStateTransitionException("cannot publish from CREATED");
 
+        //then
         assertThat(ex.getMessage()).isEqualTo("cannot publish from CREATED");
     }
 
     @Test
     void isRuntimeException() {
-        InvalidStateTransitionException ex = new InvalidStateTransitionException("some reason");
+        //when
+        final var ex = new InvalidStateTransitionException("some reason");
 
+        //then
         assertThat(ex).isInstanceOf(RuntimeException.class);
     }
 }

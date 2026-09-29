@@ -5,7 +5,6 @@ import dev.rafprz.requestmanagement.domain.RequestEntityFactory;
 import dev.rafprz.requestmanagement.domain.RequestStateChangeEntity;
 import dev.rafprz.requestmanagement.generated.model.RequestDto;
 import dev.rafprz.requestmanagement.generated.model.RequestState;
-import dev.rafprz.requestmanagement.generated.model.StateChangeDto;
 import dev.rafprz.requestmanagement.generated.model.TransitionAction;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
@@ -22,11 +21,14 @@ class RequestMapperTest {
     private final RequestEntityFactory requestEntityFactory = new RequestEntityFactory();
 
     @Test
-    void toDto_mapsNewRequest_withUndefinedOptionalFields() {
+    void should_map_new_request_to_dto_with_undefined_optional_fields() {
+        //given
         final var entity = requestEntityFactory.create("name", "content");
 
+        //when
         final var dto = mapper.toDto(entity);
 
+        //then
         assertThat(dto.getId()).isEqualTo(entity.getId());
         assertThat(dto.getName()).isEqualTo("name");
         assertThat(dto.getContent()).isEqualTo("content");
@@ -38,14 +40,17 @@ class RequestMapperTest {
     }
 
     @Test
-    void toDto_mapsPublishedRequest_withPresentPublishedNumber() {
-        RequestEntity entity = requestEntityFactory.create("name", "content");
+    void should_map_published_request_with_present_published_number() {
+        //given
+        final var entity = requestEntityFactory.create("name", "content");
         entity.verify();
         entity.accept();
         entity.publish(42L);
 
-        RequestDto dto = mapper.toDto(entity);
+        //when
+        final var dto = mapper.toDto(entity);
 
+        //then
         assertThat(dto.getState()).isEqualTo(RequestState.PUBLISHED);
         assertThat(dto.getPublishedNumber().isPresent()).isTrue();
         assertThat(dto.getPublishedNumber().get()).isEqualTo(42L);
@@ -53,9 +58,9 @@ class RequestMapperTest {
     }
 
     @Test
-    void toDto_mapsRejectedRequest_withPresentReason() {
+    void should_map_rejected_request_with_present_reason() {
         //given
-        RequestEntity entity = requestEntityFactory.create("name", "content");
+        final var entity = requestEntityFactory.create("name", "content");
         entity.verify();
         entity.reject("not good enough");
 
@@ -70,13 +75,16 @@ class RequestMapperTest {
     }
 
     @Test
-    void toDto_mapsStateChangeWithFromStateAndReason() {
-        UUID requestId = UUID.randomUUID();
-        RequestStateChangeEntity entity = new RequestStateChangeEntity(
+    void should_map_state_change_with_from_state_and_reason() {
+        //given
+        final var requestId = UUID.randomUUID();
+        final var entity = new RequestStateChangeEntity(
                 requestId, TransitionAction.REJECT, RequestState.VERIFIED, RequestState.REJECTED, "bad request");
 
-        StateChangeDto dto = mapper.toDto(entity);
+        //when
+        final var dto = mapper.toDto(entity);
 
+        //then
         assertThat(dto.getId()).isEqualTo(entity.getId());
         assertThat(dto.getRequestId()).isEqualTo(requestId);
         assertThat(dto.getAction()).isEqualTo(TransitionAction.REJECT);
@@ -88,25 +96,31 @@ class RequestMapperTest {
     }
 
     @Test
-    void toDto_mapsStateChangeWithoutFromStateOrReason() {
-        UUID requestId = UUID.randomUUID();
-        RequestStateChangeEntity entity = new RequestStateChangeEntity(
+    void should_map_state_change_without_from_state_or_reason() {
+        //given
+        final var requestId = UUID.randomUUID();
+        final var entity = new RequestStateChangeEntity(
                 requestId, TransitionAction.CREATE, null, RequestState.CREATED, null);
 
-        StateChangeDto dto = mapper.toDto(entity);
+        //when
+        final var dto = mapper.toDto(entity);
 
+        //then
         assertThat(dto.getFromState()).isNull();
         assertThat(dto.getReason().isPresent()).isFalse();
     }
 
     @Test
     void toPageDto_mapsContentAndPagingMetadata() {
+        //given
         final var first = requestEntityFactory.create("first", "content-1");
         final var second = requestEntityFactory.create("second", "content-2");
-        PageImpl<RequestEntity> page = new PageImpl<>(List.of(first, second), PageRequest.of(0, 10), 2);
+        final var page = new PageImpl<>(List.of(first, second), PageRequest.of(0, 10), 2);
 
+        //when
         final var dto = mapper.toPageDto(page);
 
+        //then
         assertThat(dto.getContent()).hasSize(2);
         assertThat(dto.getContent().get(0).getId()).isEqualTo(first.getId());
         assertThat(dto.getContent().get(1).getId()).isEqualTo(second.getId());
@@ -117,11 +131,14 @@ class RequestMapperTest {
     }
 
     @Test
-    void toPageDto_mapsEmptyPage() {
-        PageImpl<RequestEntity> page = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
+    void should_map_empty_page() {
+        //given
+        final var page = new PageImpl<RequestEntity>(List.of(), PageRequest.of(0, 10), 0);
 
+        //when
         final var dto = mapper.toPageDto(page);
 
+        //then
         assertThat(dto.getContent()).isEmpty();
         assertThat(dto.getTotalElements()).isEqualTo(0L);
         assertThat(dto.getTotalPages()).isEqualTo(0);

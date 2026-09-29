@@ -16,9 +16,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Exercises {@link RequestJpaRepository} against a real H2 database (PostgreSQL compatibility
- * mode) with the actual Liquibase-managed schema, so queries and specifications run against
- * real data instead of mocks.
+ * jpaRepository with H2 in memory database
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -30,16 +28,16 @@ class RequestJpaRepositoryTest {
     private final RequestEntityFactory requestEntityFactory = new RequestEntityFactory();
 
     @Test
-    void save_persistsAndAssignsId() {
+    void should_save_persists_and_assign_id() {
         //given
-        RequestEntity entity = requestEntityFactory.create("name", "content");
+        final var entity = requestEntityFactory.create("name", "content");
 
         //when
-        RequestEntity saved = requestRepository.save(entity);
+        final var saved = requestRepository.save(entity);
 
         //then
         assertThat(saved.getId()).isNotNull();
-        Optional<RequestEntity> found = requestRepository.findById(saved.getId());
+        final var found = requestRepository.findById(saved.getId());
         assertThat(found).isPresent();
         assertThat(found.get().getName()).isEqualTo("name");
         assertThat(found.get().getContent()).isEqualTo("content");
@@ -47,7 +45,7 @@ class RequestJpaRepositoryTest {
     }
 
     @Test
-    void findMaxPublishedNumber_returnsZero_whenNoneArePublished() {
+    void should_return_zero_when_none_are_published() {
         //given
         requestRepository.save(requestEntityFactory.create("name", "content"));
 
@@ -59,7 +57,7 @@ class RequestJpaRepositoryTest {
     }
 
     @Test
-    void findMaxPublishedNumber_returnsHighestPublishedNumber() {
+    void should_return_highest_published_number() {
         //given
         final var first = requestEntityFactory.create("first", "content-1");
         first.verify();
@@ -88,7 +86,7 @@ class RequestJpaRepositoryTest {
     }
 
     @Test
-    void findAllWithSpecification_filtersByNameContains() {
+    void should_filter_by_name_contains() {
         requestRepository.save(requestEntityFactory.create("Alpha request", "content"));
         requestRepository.save(requestEntityFactory.create("Beta request", "content"));
 
@@ -100,47 +98,65 @@ class RequestJpaRepositoryTest {
     }
 
     @Test
-    void findAllWithSpecification_filtersByState() {
-        RequestEntity created = requestEntityFactory.create("created request", "content");
+    void should_filter_by_state() {
+        //given
+        final var created = requestEntityFactory.create("created request", "content");
         requestRepository.save(created);
 
-        RequestEntity verified = requestEntityFactory.create("verified request", "content");
+        //and
+        final var verified = requestEntityFactory.create("verified request", "content");
         verified.verify();
         requestRepository.save(verified);
 
-        List<RequestEntity> results = requestRepository.findAll(
+        //when
+        final var results = requestRepository.findAll(
                 RequestSpecifications.hasState(RequestState.VERIFIED));
 
+        //then
         assertThat(results).hasSize(1);
         assertThat(results.get(0).getName()).isEqualTo("verified request");
     }
 
     @Test
-    void findAllWithSpecification_combinesNameAndStateFilters() {
-        RequestEntity match = requestEntityFactory.create("Gamma request", "content");
+    void should_combine_name_and_state_filters() {
+        //given
+        final var match = requestEntityFactory.create("Gamma request", "content");
         match.verify();
         requestRepository.save(match);
 
-        RequestEntity wrongState = requestEntityFactory.create("Gamma request", "content");
+        //and
+        final var wrongState = requestEntityFactory.create("Gamma request", "content");
         requestRepository.save(wrongState);
 
-        RequestEntity wrongName = requestEntityFactory.create("Delta request", "content");
+        //and
+        final var wrongName = requestEntityFactory.create("Delta request", "content");
         wrongName.verify();
         requestRepository.save(wrongName);
 
-        List<Specification<RequestEntity>> specs = List.of(
+        //and
+        final var specs = List.of(
                 RequestSpecifications.nameContains("gamma"),
                 RequestSpecifications.hasState(RequestState.VERIFIED));
-        List<RequestEntity> results = requestRepository.findAll(Specification.allOf(specs));
 
+        //when
+        final var results = requestRepository.findAll(Specification.allOf(specs));
+
+        //then
         assertThat(results).hasSize(1);
+
+        //and
         assertThat(results.get(0).getId()).isEqualTo(match.getId());
     }
 
     @Test
-    void findById_returnsEmpty_whenRequestDoesNotExist() {
-        Optional<RequestEntity> found = requestRepository.findById(UUID.randomUUID());
+    void findById_should_return_empty_when_request_does_not_exist() {
+        //given
+        final var randomId = UUID.randomUUID();
 
+        //when
+        final var found = requestRepository.findById(randomId);
+
+        //then
         assertThat(found).isEmpty();
     }
 }
