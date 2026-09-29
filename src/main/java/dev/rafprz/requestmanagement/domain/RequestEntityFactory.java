@@ -3,7 +3,7 @@ package dev.rafprz.requestmanagement.domain;
 import org.springframework.stereotype.Component;
 
 /**
- * Centralizes construction of {@link RequestEntity} instances so creation rules live in one place.
+ * creates RequestEntity instances
  */
 @Component
 public class RequestEntityFactory {

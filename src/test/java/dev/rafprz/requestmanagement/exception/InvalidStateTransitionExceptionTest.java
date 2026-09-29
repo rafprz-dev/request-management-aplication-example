@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class InvalidStateTransitionExceptionTest {
 
     @Test
-    void constructor_setsMessage() {
+    void constructor_sets_message() {
         //when
         final var ex = new InvalidStateTransitionException("cannot publish from CREATED");
 

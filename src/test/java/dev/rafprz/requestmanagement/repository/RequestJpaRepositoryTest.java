@@ -87,12 +87,15 @@ class RequestJpaRepositoryTest {
 
     @Test
     void should_filter_by_name_contains() {
+        //given
         requestRepository.save(requestEntityFactory.create("Alpha request", "content"));
         requestRepository.save(requestEntityFactory.create("Beta request", "content"));
 
+        //when
         List<RequestEntity> results = requestRepository.findAll(
                 RequestSpecifications.nameContains("alpha"));
 
+        //then
         assertThat(results).hasSize(1);
         assertThat(results.get(0).getName()).isEqualTo("Alpha request");
     }
