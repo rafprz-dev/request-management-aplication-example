@@ -18,8 +18,8 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * JPA entity for the {@code request_state_changes} table, an append-only audit log of every
- * transition applied to a {@link RequestEntity}.
+ * JPA entity for the append-only audit log of every
+ * transition applied to a Request
  */
 @Entity
 @Table(name = "request_state_changes")

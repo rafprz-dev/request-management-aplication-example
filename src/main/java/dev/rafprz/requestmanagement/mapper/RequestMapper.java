@@ -10,9 +10,7 @@ import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.data.domain.Page;
 
 /**
- * Converts JPA entities to their generated API DTO counterparts.
- * Property names match on both sides, so MapStruct wires the mapping automatically;
- * the {@code wrap} overloads below teach it how to fill the {@link JsonNullable} fields.
+ * Maps Entity to DTO and vice versa
  */
 @Mapper(componentModel = "spring")
 public interface RequestMapper {

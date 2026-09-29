@@ -54,7 +54,7 @@ public class RequestEntity {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    public RequestEntity(String name, String content) {
+    RequestEntity(String name, String content) {
         this.name = name;
         this.content = content;
         this.state = RequestState.CREATED;

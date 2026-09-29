@@ -1,6 +1,7 @@
 package dev.rafprz.requestmanagement.mapper;
 
 import dev.rafprz.requestmanagement.domain.RequestEntity;
+import dev.rafprz.requestmanagement.domain.RequestEntityFactory;
 import dev.rafprz.requestmanagement.domain.RequestStateChangeEntity;
 import dev.rafprz.requestmanagement.generated.model.RequestState;
 import dev.rafprz.requestmanagement.generated.model.TransitionAction;
@@ -11,10 +12,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RequestStateChangeMapperTest {
 
     private final RequestStateChangeMapper mapper = new RequestStateChangeMapperImpl();
+    private final RequestEntityFactory requestEntityFactory = new RequestEntityFactory();
 
     @Test
     void toEntity_mapsRequestIdActionFromStateAndCurrentState() {
-        RequestEntity request = new RequestEntity("name", "content");
+        RequestEntity request = requestEntityFactory.create("name", "content");
 
         RequestStateChangeEntity entity = mapper.toEntity(request, TransitionAction.CREATE, null);
 
@@ -28,7 +30,7 @@ class RequestStateChangeMapperTest {
 
     @Test
     void toEntity_capturesToStateFromCurrentRequestState() {
-        RequestEntity request = new RequestEntity("name", "content");
+        RequestEntity request = requestEntityFactory.create("name", "content");
         request.verify();
 
         RequestStateChangeEntity entity = mapper.toEntity(request, TransitionAction.VERIFY, RequestState.CREATED);
@@ -39,7 +41,7 @@ class RequestStateChangeMapperTest {
 
     @Test
     void toEntity_capturesReasonWhenRequestHasOne() {
-        RequestEntity request = new RequestEntity("name", "content");
+        RequestEntity request = requestEntityFactory.create("name", "content");
         request.verify();
         request.reject("not good enough");
 

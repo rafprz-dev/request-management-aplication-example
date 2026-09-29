@@ -8,7 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public final class RequestSpecifications {
 
-    public static Specification<RequestEntity> nameContains(String name) {
+    public static Specification<RequestEntity> nameContains(final String name) {
         if (name == null || name.isBlank()) {
             return null;
         }
@@ -16,7 +16,7 @@ public final class RequestSpecifications {
         return (root, query, cb) -> cb.like(cb.lower(root.get("name")), pattern);
     }
 
-    public static Specification<RequestEntity> hasState(RequestState state) {
+    public static Specification<RequestEntity> hasState(final RequestState state) {
         if (state == null) {
             return null;
         }

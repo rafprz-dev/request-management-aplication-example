@@ -5,7 +5,7 @@ package dev.rafprz.requestmanagement.exception;
  */
 public class InvalidStateTransitionException extends RuntimeException {
 
-    public InvalidStateTransitionException(String message) {
+    public InvalidStateTransitionException(final String message) {
         super(message);
     }
 }

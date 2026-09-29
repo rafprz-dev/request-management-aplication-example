@@ -1,6 +1,7 @@
 package dev.rafprz.requestmanagement.service;
 
 import dev.rafprz.requestmanagement.domain.RequestEntity;
+import dev.rafprz.requestmanagement.domain.RequestEntityFactory;
 import dev.rafprz.requestmanagement.exception.RequestNotFoundException;
 import dev.rafprz.requestmanagement.generated.model.RequestDto;
 import dev.rafprz.requestmanagement.generated.model.RequestPageDto;
@@ -12,6 +13,7 @@ import dev.rafprz.requestmanagement.mapper.RequestStateChangeMapper;
 import dev.rafprz.requestmanagement.repository.RequestJpaRepository;
 import dev.rafprz.requestmanagement.repository.RequestSpecifications;
 import dev.rafprz.requestmanagement.repository.RequestStateChangeJpaRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,20 +38,24 @@ public class RequestService {
     private final RequestStateChangeJpaRepository stateChangeRepository;
     private final RequestMapper requestMapper;
     private final RequestStateChangeMapper requestStateChangeMapper;
+    private final RequestEntityFactory requestEntityFactory;
 
-    public RequestDto create(String name, String content) {
-        RequestEntity request = requestRepository.save(new RequestEntity(name, content));
+    public RequestDto create(@NonNull final String name,
+                             @NonNull final String content) {
+        RequestEntity request = requestRepository.save(requestEntityFactory.create(name, content));
         recordHistory(request, TransitionAction.CREATE, null);
         return requestMapper.toDto(request);
     }
 
     @Transactional(readOnly = true)
-    public RequestDto getOrThrow(UUID id) {
+    public RequestDto getOrThrow(@NonNull final UUID id) {
         return requestMapper.toDto(getEntityOrThrow(id));
     }
 
     @Transactional(readOnly = true)
-    public RequestPageDto list(String name, RequestState state, Pageable pageable) {
+    public RequestPageDto list(final String name,
+                               final RequestState state,
+                               final Pageable pageable) {
         List<Specification<RequestEntity>> specs = Stream.of(
                         RequestSpecifications.nameContains(name),
                         RequestSpecifications.hasState(state))
@@ -65,7 +71,7 @@ public class RequestService {
         return requestMapper.toDto(request);
     }
 
-    public RequestDto verify(UUID id) {
+    public RequestDto verify(final UUID id) {
         RequestEntity request = getEntityOrThrow(id);
         RequestState from = request.getState();
         request.verify();
@@ -73,7 +79,7 @@ public class RequestService {
         return requestMapper.toDto(request);
     }
 
-    public RequestDto accept(UUID id) {
+    public RequestDto accept(final UUID id) {
         RequestEntity request = getEntityOrThrow(id);
         RequestState from = request.getState();
         request.accept();
@@ -81,7 +87,8 @@ public class RequestService {
         return requestMapper.toDto(request);
     }
 
-    public RequestDto reject(UUID id, String reason) {
+    public RequestDto reject(final UUID id,
+                             final String reason) {
         RequestEntity request = getEntityOrThrow(id);
         RequestState from = request.getState();
         request.reject(reason);
@@ -89,7 +96,7 @@ public class RequestService {
         return requestMapper.toDto(request);
     }
 
-    public RequestDto publish(UUID id) {
+    public RequestDto publish(final UUID id) {
         RequestEntity request = getEntityOrThrow(id);
         RequestState from = request.getState();
         long nextPublishedNumber = requestRepository.findMaxPublishedNumber() + 1;
@@ -98,7 +105,8 @@ public class RequestService {
         return requestMapper.toDto(request);
     }
 
-    public RequestDto delete(UUID id, String reason) {
+    public RequestDto delete(final UUID id,
+                             final String reason) {
         RequestEntity request = getEntityOrThrow(id);
         RequestState from = request.getState();
         request.delete(reason);
@@ -107,18 +115,19 @@ public class RequestService {
     }
 
     @Transactional(readOnly = true)
-    public List<StateChangeDto> history(UUID id) {
+    public List<StateChangeDto> history(final UUID id) {
         getEntityOrThrow(id);
         return stateChangeRepository.findByRequestIdOrderByChangedAtAsc(id).stream()
                 .map(requestMapper::toDto)
                 .toList();
     }
 
-    private RequestEntity getEntityOrThrow(UUID id) {
+    private RequestEntity getEntityOrThrow(final UUID id) {
         return requestRepository.findById(id).orElseThrow(() -> new RequestNotFoundException(id));
     }
 
-    private void recordHistory(RequestEntity request, TransitionAction action, RequestState from) {
+    private void recordHistory(final RequestEntity request,
+                               final TransitionAction action, final RequestState from) {
         stateChangeRepository.save(requestStateChangeMapper.toEntity(request, action, from));
     }
 }

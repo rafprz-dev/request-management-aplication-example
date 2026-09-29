@@ -1,8 +1,8 @@
 package dev.rafprz.requestmanagement.mapper;
 
 import dev.rafprz.requestmanagement.domain.RequestEntity;
+import dev.rafprz.requestmanagement.domain.RequestEntityFactory;
 import dev.rafprz.requestmanagement.domain.RequestStateChangeEntity;
-import dev.rafprz.requestmanagement.factory.RequestEntityFactory;
 import dev.rafprz.requestmanagement.generated.model.RequestDto;
 import dev.rafprz.requestmanagement.generated.model.RequestState;
 import dev.rafprz.requestmanagement.generated.model.StateChangeDto;
@@ -19,10 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RequestMapperTest {
 
     private final RequestMapper mapper = new RequestMapperImpl();
+    private final RequestEntityFactory requestEntityFactory = new RequestEntityFactory();
 
     @Test
     void toDto_mapsNewRequest_withUndefinedOptionalFields() {
-        final var entity = RequestEntityFactory.create("name", "content");
+        final var entity = requestEntityFactory.create("name", "content");
 
         final var dto = mapper.toDto(entity);
 
@@ -38,7 +39,7 @@ class RequestMapperTest {
 
     @Test
     void toDto_mapsPublishedRequest_withPresentPublishedNumber() {
-        RequestEntity entity = new RequestEntity("name", "content");
+        RequestEntity entity = requestEntityFactory.create("name", "content");
         entity.verify();
         entity.accept();
         entity.publish(42L);
@@ -54,7 +55,7 @@ class RequestMapperTest {
     @Test
     void toDto_mapsRejectedRequest_withPresentReason() {
         //given
-        RequestEntity entity = RequestEntityFactory.create("name", "content");
+        RequestEntity entity = requestEntityFactory.create("name", "content");
         entity.verify();
         entity.reject("not good enough");
 
@@ -100,8 +101,8 @@ class RequestMapperTest {
 
     @Test
     void toPageDto_mapsContentAndPagingMetadata() {
-        final var first = RequestEntityFactory.create("first", "content-1");
-        final var second = RequestEntityFactory.create("second", "content-2");
+        final var first = requestEntityFactory.create("first", "content-1");
+        final var second = requestEntityFactory.create("second", "content-2");
         PageImpl<RequestEntity> page = new PageImpl<>(List.of(first, second), PageRequest.of(0, 10), 2);
 
         final var dto = mapper.toPageDto(page);

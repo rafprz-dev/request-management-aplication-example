@@ -16,17 +16,17 @@ import java.util.List;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(RequestNotFoundException.class)
-    public ResponseEntity<ErrorDto> handleNotFound(RequestNotFoundException ex) {
+    public ResponseEntity<ErrorDto> handleNotFound(final RequestNotFoundException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), List.of());
     }
 
     @ExceptionHandler(InvalidStateTransitionException.class)
-    public ResponseEntity<ErrorDto> handleConflict(InvalidStateTransitionException ex) {
+    public ResponseEntity<ErrorDto> handleConflict(final InvalidStateTransitionException ex) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), List.of());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDto> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorDto> handleValidation(final MethodArgumentNotValidException ex) {
         List<String> details = ex.getBindingResult().getFieldErrors().stream()
                 .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                 .toList();
@@ -34,15 +34,17 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorDto> handleConstraintViolation(ConstraintViolationException ex) {
+    public ResponseEntity<ErrorDto> handleConstraintViolation(final ConstraintViolationException ex) {
         List<String> details = ex.getConstraintViolations().stream()
                 .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                 .toList();
         return build(HttpStatus.BAD_REQUEST, "Validation failed", details);
     }
 
-    private ResponseEntity<ErrorDto> build(HttpStatus status, String message, List<String> details) {
-        ErrorDto error = new ErrorDto(status.value(), status.getReasonPhrase(), message, OffsetDateTime.now());
+    private ResponseEntity<ErrorDto> build(final HttpStatus status,
+                                           final String message,
+                                           final List<String> details) {
+        final var error = new ErrorDto(status.value(), status.getReasonPhrase(), message, OffsetDateTime.now());
         error.setDetails(details);
         return ResponseEntity.status(status).body(error);
     }
