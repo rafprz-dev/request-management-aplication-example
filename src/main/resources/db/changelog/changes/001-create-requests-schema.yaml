@@ -1,0 +1,107 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-request-management-table
+      author: rafprz
+      comment: "Create the requests and request_state_changes tables"
+      changes:
+        - createTable:
+            tableName: requests
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: state
+                  type: VARCHAR(20)
+                  defaultValue: CREATED
+                  constraints:
+                    nullable: false
+              - column:
+                  name: published_number
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+                    unique: true
+                    uniqueConstraintName: uk_requests_published_number
+              - column:
+                  name: reason
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: request_state_changes
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: request_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: action
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: from_state
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: to_state
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reason
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: changed_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: request_state_changes
+            baseColumnNames: request_id
+            referencedTableName: requests
+            referencedColumnNames: id
+            constraintName: fk_request_state_changes_request_id
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_request_state_changes_request_id
+            tableName: request_state_changes
+            columns:
+              - column:
+                  name: request_id
