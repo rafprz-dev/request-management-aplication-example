@@ -1,9 +1,7 @@
 package dev.rafprz.requestmanagement.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.rafprz.requestmanagement.domain.RequestEntity;
 import dev.rafprz.requestmanagement.generated.model.CreateRequestDto;
-import dev.rafprz.requestmanagement.repository.RequestJpaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +27,7 @@ class RequestLifecycleIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-    
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test

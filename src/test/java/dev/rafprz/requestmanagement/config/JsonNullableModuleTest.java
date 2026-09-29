@@ -179,7 +179,7 @@ class JsonNullableModuleTest {
             final var roundTripped = mapper.readValue(json, Sample.class);
 
             // then
-            // there was a problem with undefined javascript field
+            // there was a problem with undefined javaScript field
             assertThat(roundTripped.getNumber()).isEqualTo(JsonNullable.of(null));
             assertThat(roundTripped.getNumber().isPresent()).isTrue();
         }

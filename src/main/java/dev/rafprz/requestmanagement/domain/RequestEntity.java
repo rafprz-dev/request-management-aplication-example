@@ -19,8 +19,8 @@ import java.util.Arrays;
 import java.util.UUID;
 
 /**
- * JPA entity for the {@code requests} table. Owns the request state machine described in
- * {@code requests.yaml}: transition methods validate the current state before mutating it.
+ * JPA entity for the requests table. Owns the request state machine described in
+ * transition methods validate the current state before mutating it.
  */
 @Entity
 @Table(name = "requests")
