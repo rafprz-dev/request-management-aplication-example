@@ -1,6 +1,7 @@
 package dev.rafprz.requestmanagement.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.rafprz.requestmanagement.domain.RequestEntity;
 import dev.rafprz.requestmanagement.generated.model.CreateRequestDto;
 import dev.rafprz.requestmanagement.repository.RequestJpaRepository;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,10 +29,7 @@ class RequestLifecycleIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private RequestJpaRepository requestJpaRepository;
-
+    
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
@@ -87,9 +87,5 @@ class RequestLifecycleIntegrationTest {
                 .andExpect(jsonPath("$[3].action").value("PUBLISH"))
                 .andExpect(jsonPath("$[3].fromState").value("ACCEPTED"))
                 .andExpect(jsonPath("$[3].toState").value("PUBLISHED"));
-
-        //and
-        requestJpaRepository.deleteAll();
-        requestJpaRepository.flush();
     }
 }

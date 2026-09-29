@@ -22,3 +22,6 @@ Application behavior is defined by a state diagram that specifies the valid stat
 - Two tables are used to store the requests and their transitions.
 - The request table contains the current state of the request, while the transition table contains the history of all transitions that have occurred for each request.
 - There is one controller that exposes the endpoints for creating, updating, and retrieving requests. The controller uses a service layer to handle the business logic of managing requests and their transitions. The service layer uses a repository layer to interact with the database.
+
+# Target of that application was to show multiple possibilities of implementing application functionality and different kinds of testing.
+# The application is not intended to be a complete solution for managing requests, but rather a demonstration of how to implement a request management system using Java and Spring Boot.
