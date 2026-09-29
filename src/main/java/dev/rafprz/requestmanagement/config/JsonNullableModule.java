@@ -14,11 +14,8 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.module.SimpleModule;
 
 /**
- * Registers (de)serialization support for {@link JsonNullable} with Jackson 3
- * (used by Spring Boot's auto-configured {@code JsonMapper}). Without this module
- * {@code JsonNullable}-typed fields on the generated OpenAPI models (e.g.
- * {@code RequestDto.publishedNumber}, {@code RequestDto.reason}) serialize as their
- * internal representation instead of the wrapped value.
+ * Required to support JsonNullable in OpenAPI generated DTOs.
+ * This module provides custom serialization and deserialization for the JsonNullable type, allowing it to be correctly handled during JSON processing.
  */
 public class JsonNullableModule extends SimpleModule {
 
